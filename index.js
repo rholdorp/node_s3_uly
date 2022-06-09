@@ -2,15 +2,13 @@ const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 
 
-const upload = async (originalData) => {
+const upload = async (appendData) => {
    const params = {
-       ACL: 'public-read',
-       Body: originalData + 'Hey Ralph en Frank',
+       Body: appendData,
        ContentType: 'text/html',
        Bucket: 'ndbrgrd-ws-data',
        Key: 'testfile.txt'
    } 
-
    return await new Promise((resolve, reject) => {
        s3.putObject(params, (err, results) => {
            if(err) reject(err);
@@ -21,24 +19,22 @@ const upload = async (originalData) => {
 
 const read = async () => {
     const params = {
-        ACL: 'public-read',
         Bucket: 'ndbrgrd-ws-data',
         Key: 'testfile.txt'
     } 
      return await new Promise((resolve, reject) => {
          s3.getObject(params, (err, results) => {
             if(err) reject(err);
-            else resolve(results);             
+            else resolve(results.Body.toString());             
          });
     });
 }
 
 const main = async(event) => {
-    var r = await read().then((e,r) =>{
-        console.log("error,result="+ e,r);
-    });
-    console.log(r);
-    return upload(r);
+    let updatedInput = '';
+    let readRes = await read();
+    console.log("Read output:" + readRes);
+    updatedInput = readRes+'--<br>';
+    upload(updatedInput);
 };
-
 exports.handler = main;
