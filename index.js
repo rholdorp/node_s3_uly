@@ -30,17 +30,22 @@ const read = async () => {
 };
 
 const main = async (event) => {
-  let updatedInput = "";
-  let readRes = await read();
-  console.log("Request event = " + event);
-  console.log("Read output:" + readRes);
-  updatedInput = readRes + "--<br>" + event.body;
-  upload(updatedInput);
-
   const response = {
     statusCode: 200,
-    body: JSON.stringify("Ack from the lambda!"),
+    body: JSON.stringify("Ack from the lambda"),
   };
+  try {
+    let updatedInput = "";
+    let readRes = await read();
+    updatedInput = readRes + "--<br>" + event.body;
+    upload(updatedInput);
+  } catch (e) {
+    console.log("Error:" + e);
+    const response = {
+      statusCode: 500,
+      body: JSON.stringify("S3 read failed"),
+    };
+  }
   return response;
 };
 exports.handler = main;
